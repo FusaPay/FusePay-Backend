@@ -1,98 +1,247 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# UtilityX Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The UtilityX Backend powers a smart peer-to-peer utility marketplace that allows users to buy, sell, and manage digital utilities such as airtime, mobile data, and bill payments.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This service handles authentication, wallet management, marketplace operations, transaction processing, and integrations with external providers.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Overview
 
-## Project setup
+The backend is responsible for:
+
+* User authentication and authorization
+* Wallet balance and escrow management
+* Marketplace listings (P2P trading)
+* Trade execution and transaction tracking
+* Airtime resale processing
+* Utility bill payments (electricity, water, TV)
+* Integration with payment and telecom APIs
+
+---
+
+# Tech Stack
+
+* Node.js
+* NestJS (recommended) or Express
+* PostgreSQL (database)
+* Redis (caching, queues)
+* REST API
+
+---
+
+# Project Structure
+
+src/
+├── modules/
+│   ├── auth/              # Authentication (JWT, login, register)
+│   ├── users/             # User profile management
+│   ├── wallet/            # Wallet logic (balance, escrow)
+│   ├── marketplace/       # Listings (create, fetch, expire)
+│   ├── trades/            # Trade execution engine
+│   ├── airtime/           # Airtime resale flow
+│   ├── bills/             # Utility bill payments
+│   └── notifications/     # Alerts (email, push, SMS)
+│
+├── integrations/
+│   ├── payments/          # Payment gateways (Paystack, etc.)
+│   └── utilities/         # Airtime/data APIs
+│
+├── database/
+│   ├── entities/          # ORM models (User, Wallet, Listing, etc.)
+│   ├── migrations/        # DB migrations
+│   └── seeds/             # Seed data
+│
+├── common/
+│   ├── guards/            # Auth guards
+│   ├── filters/           # Error handling
+│   ├── interceptors/      # Logging, response formatting
+│   └── utils/             # Helper functions
+│
+├── config/                # Environment config
+├── jobs/                  # Cron jobs (expiry, retries)
+└── main.ts                # App entry point
+
+---
+
+# Core Modules Explained
+
+## Auth Module
+
+Handles user registration, login, and JWT authentication.
+
+Endpoints:
+
+* POST /auth/register
+* POST /auth/login
+* GET /auth/me
+
+---
+
+## Wallet Module
+
+Manages user balances and escrow.
+
+Features:
+
+* Fund wallet
+* View balance
+* Lock/unlock funds for trades
+
+---
+
+## Marketplace Module
+
+Handles P2P listings.
+
+Features:
+
+* Create listing
+* Fetch listings
+* Expiry logic (auto-expire based on time)
+
+---
+
+## Trades Module (Core Engine)
+
+Handles the full transaction lifecycle:
+
+Flow:
+
+1. Buyer initiates purchase
+2. System checks balance
+3. Funds are locked (escrow)
+4. Utility API is called
+5. If successful:
+
+   * Seller is credited
+6. If failed:
+
+   * Buyer is refunded
+
+---
+
+## Airtime Module
+
+Handles airtime-to-cash conversion.
+
+Flow:
+
+1. User submits airtime request
+2. System provides recipient number
+3. User sends airtime
+4. Transaction is verified
+5. Wallet is credited
+
+---
+
+## Bills Module
+
+Handles utility payments:
+
+* Electricity
+* Water
+* TV subscriptions
+
+Flow:
+User enters details → backend calls provider API → returns success/token
+
+---
+
+# Database Schema (Core Tables)
+
+users
+wallets
+listings
+trades
+transactions
+airtime_sales
+bill_payments
+
+---
+
+# API Integrations
+
+* Payment Gateway: Paystack (wallet funding)
+* Telecom APIs: Reloadly or similar providers
+
+---
+
+# Background Jobs
+
+Located in /jobs/
+
+Includes:
+
+* Expire listings after deadline
+* Retry failed transactions
+* Send notifications
+
+---
+
+# Running the Project
+
+## Install dependencies
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+## Start development server
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+# Environment Variables
 
-# e2e tests
-$ npm run test:e2e
+Create a `.env` file:
 
-# test coverage
-$ npm run test:cov
+```env
+DATABASE_URL=
+JWT_SECRET=
+PAYSTACK_SECRET_KEY=
+UTILITY_API_KEY=
+REDIS_URL=
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+# Responsibilities of Backend
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+* Ensure transaction reliability
+* Maintain data integrity
+* Provide secure APIs
+* Handle integrations with external services
+* Manage escrow and trade execution
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+---
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+# MVP Scope
 
-## Resources
+This backend supports the MVP features:
 
-Check out a few resources that may come in handy when working with NestJS:
+* User authentication
+* Wallet funding and balance
+* Data/airtime purchase
+* Marketplace listings
+* Trade execution (escrow logic)
+* Airtime resale
+* Bill payments
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+# Future Improvements
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+* Blockchain escrow integration (Stellar Soroban)
+* AI-based price recommendations
+* Advanced fraud detection
+* Real-time notifications (WebSockets)
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Contribution
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Please follow the CONTRIBUTING.md guidelines when contributing to this project.
