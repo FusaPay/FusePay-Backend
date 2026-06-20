@@ -1,6 +1,6 @@
-# UtilityX Backend
+# FusePay Backend
 
-The UtilityX Backend powers a smart peer-to-peer utility marketplace that allows users to buy, sell, and manage digital utilities such as airtime, mobile data, and bill payments.
+The FusePay Backend powers a smart peer-to-peer utility marketplace that allows users to buy, sell, and manage digital utilities such as airtime, mobile data, and bill payments.
 
 This service handles authentication, wallet management, marketplace operations, transaction processing, and integrations with external providers.
 
